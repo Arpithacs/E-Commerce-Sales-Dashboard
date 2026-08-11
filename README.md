@@ -1,6 +1,6 @@
 # E-Commerce Sales Analytics & Demand Forecasting Pipeline
 
-A comprehensive, production-grade retail analytics pipeline built on the **Online Retail II** dataset. This project processes raw transactional data into a PostgreSQL analytical data warehouse (hosted on Supabase) and runs modular analytics covering **RFM Customer Segmentation**, **Monthly Cohort Retention Analysis**, **Market Basket Association Analysis**, **Holt-Winters Sales Demand Forecasting**, and **Safety Stock Inventory Simulation**. The populated warehouse tables (`fact_rfm`, `fact_forecast`, `fact_sales`) serve as the centralized data layer for Power BI dashboard visualizations (currently in progress).
+A comprehensive, production-grade retail analytics pipeline built on the **Online Retail II** dataset. This project processes raw transactional data into a PostgreSQL analytical data warehouse (hosted on Supabase) and runs modular analytics covering **RFM Customer Segmentation**, **Monthly Cohort Retention Analysis**, **Market Basket Association Analysis**, **Sales Trend & Seasonality Analysis**, **Holt-Winters Demand Forecasting**, and **Safety Stock Inventory Simulation**. The populated warehouse tables (`fact_rfm`, `fact_forecast`, `fact_inventory`, `fact_sales`) serve as the centralized data layer for Power BI dashboard visualizations (currently in progress).
 
 ---
 
@@ -34,10 +34,11 @@ The repository is organized into four core analytical domains:
   * **Cross-Category Pairs**: Complementary product bundles (saved to `market_basket_cross_category.csv`).
 
 ### 4. Sales Demand Forecasting & Inventory Simulation
+* **`sales_trend_seasonality.py`**: Produces a monthly/quarterly sales trend and seasonality summary, top products, and geographic revenue breakdown.
 * **`forecast.py`**: Fits Holt-Winters Exponential Smoothing models to weekly demand for top-20 revenue products, projecting future sales volume.
 * **`backtest.py`**: Evaluates forecasting accuracy across historical hold-out periods using MAPE and RMSE.
 * **`load_forecast.py`**: Idempotently populates the `fact_forecast` analytical table in Supabase.
-* **`simulate_inventory.py`**: Simulates safety stock levels, reorder thresholds, and stockout risks based on demand volatility.
+* **`simulate_inventory.py`**: Simulates safety stock levels, reorder thresholds, and stockout risks based on demand volatility, populating the `fact_inventory` table in Supabase.
 * **`forecast_handoff.md`**: Technical handoff documentation covering model parameters and Power BI schema integration.
 
 ---
@@ -55,6 +56,15 @@ The repository is organized into four core analytical domains:
 3. **`assign_segment()` Precedence Optimization**:
    * *Problem*: Customers with `R=2, F>=4, M>=4` (high historical value but declining recency) overlapped between `Loyal Customers` and `At Risk`.
    * *Fix*: Reordered the `if-elif` chain to evaluate `At Risk` before `Loyal Customers`, correctly reassigning 133 churning high-value accounts into `At Risk` (adjusting `At Risk` to 182 and refining `Loyal Customers` to 491).
+
+4. **Timeline Baseline & Seasonality**:
+   * *Note*: The dataset begins in December 2009, so the 2009 Q4 and December 2009 figures represent a partial period; year-over-year comparisons are only meaningful from December 2010 onward.
+
+---
+
+## 🔒 Database Security Notes
+
+All database access in this project uses a direct PostgreSQL connection string (`SUPABASE_DB_URL`), authenticated by username/password, not Supabase's REST API or anon/public key. Because of this, Supabase's Row Level Security (RLS) — which governs access through the REST API layer — does not apply to how this project connects to the database and was intentionally left unconfigured. Database credentials are never committed to this repository; they are loaded exclusively from the `SUPABASE_DB_URL` environment variable at runtime.
 
 ---
 
@@ -80,6 +90,11 @@ Set the database connection string environment variable (`SUPABASE_DB_URL`):
 
 ### 2. Running Pipelines
 
+* **Run Sales Trend & Seasonality Analysis**:
+  ```bash
+  python sales_trend_seasonality.py
+  ```
+
 * **Run RFM Customer Segmentation & Load Warehouse**:
   ```bash
   python rfm_segmentation.py
@@ -100,4 +115,9 @@ Set the database connection string environment variable (`SUPABASE_DB_URL`):
   ```bash
   python forecast.py
   python load_forecast.py
+  ```
+
+* **Run Inventory Simulation & Load Warehouse**:
+  ```bash
+  python simulate_inventory.py
   ```
