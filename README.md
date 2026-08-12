@@ -17,7 +17,7 @@ A comprehensive, production-grade retail analytics pipeline built on the **Onlin
 
 ## 📁 Pipeline Components & Architecture
 
-The repository is organized into four core analytical domains:
+The repository is organized into five core analytical domains:
 
 ### 1. RFM Customer Segmentation
 * **`rfm_segmentation.py`**: Queries non-return sales data from `fact_sales`, computes Recency, Frequency (based on direct invoice counts), and Monetary metrics for 5,269 customers, applies 1–5 quintile scoring, and assigns customers into 7 distinct behavioral segments.
@@ -33,8 +33,10 @@ The repository is organized into four core analytical domains:
   * **Variant Pairs**: Color, size, or fragrance variations (saved to `market_basket_variants.csv`).
   * **Cross-Category Pairs**: Complementary product bundles (saved to `market_basket_cross_category.csv`).
 
-### 4. Sales Demand Forecasting & Inventory Simulation
+### 4. Sales Trend & Seasonality Analysis
 * **`sales_trend_seasonality.py`**: Produces a monthly/quarterly sales trend and seasonality summary, top products, and geographic revenue breakdown.
+
+### 5. Sales Demand Forecasting & Inventory Simulation
 * **`forecast.py`**: Fits Holt-Winters Exponential Smoothing models to weekly demand for top-20 revenue products, projecting future sales volume.
 * **`backtest.py`**: Evaluates forecasting accuracy across historical hold-out periods using MAPE and RMSE.
 * **`load_forecast.py`**: Idempotently populates the `fact_forecast` analytical table in Supabase.
