@@ -4,6 +4,10 @@ __pycache__/
 venv/
 .venv/
 *.csv
+!market_basket_variants.csv
+!top50_variant_pairs.csv
+!top50_cross_category_pairs.csv
+!backtest_results.csv
 *.db
 *.sqlite3
 .DS_Store
